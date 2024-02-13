@@ -17,6 +17,7 @@
             <button id="leave-btn">Leave Stream</button>
             <button id="mic-btn">Mic on</button>
             <button id="camera-btn">Camera on</button>
+            <button id="random-btn">Random</button>
          </div>
     </div>
     <!-- <main>
