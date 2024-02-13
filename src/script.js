@@ -10,6 +10,7 @@ let localTracks = {
 }
 
 let remotetrocks = {};
+let currentIndex = 0;
 
 async function join()
 {
@@ -18,6 +19,9 @@ async function join()
     localTracks = await AgoraRTC.createMicrophoneAndCameraTracks()
 
     let player = `<div class="video-container" id="user-container-${UID}">
+                  <div class="uid" >
+                    ${UID}
+                  </div>
                     <div class="video-player" id="user-${UID}">
                     </div>
     
@@ -37,86 +41,47 @@ let joinStream  = async () => {
 }
 
 let handleUserJoined = async (user, mediaType ) => {
-    remotetrocks[user.uid] = user;
+    remotetrocks[user.uid] = user
+    await client.subscribe(user, mediaType)
 
-    // Subscribe to the new user's tracks
-    await client.subscribe(user, mediaType);
-
-    // Check the number of users
-    const currentUsersCount = Object.keys(remotetrocks).length;
-
-    if (currentUsersCount > 1) {
-        // If there are more than one user, remove the additional user
-        handleInvalidUser(user);
-        return;
-    }
-
-    // Continue with the code for handling user publication
-    // ...
-
-    if (mediaType === 'video') {
-        let player = document.getElementById(`user-container-${user.uid}`);
-        if (player != null) {
-            player.remove();
+    if(mediaType === 'video')
+    {
+        let player = document.getElementById(`user-container-${user.uid}`)
+        if(player != null)
+        {
+            player.remove()
         }
 
         player = `<div class="video-container" id="user-container-${user.uid}">
+        <div class="uid" >
+        ${user.uid}
+        </div>
                         <div class="video-player" id="user-${user.uid}">
                          </div>
                   </div>`;
 
-        document.getElementById('video-streams').insertAdjacentHTML('beforeend', player);
-
-        user.videoTrack.play(`user-${user.uid}`);
+         document.getElementById('video-streams').insertAdjacentHTML('beforeend', player)
+         
+         user.videoTrack.play(`user-${user.uid}`)
     }
 
-    if (mediaType === 'audio') {
-        user.audioTrack.play();
+    if(mediaType  === 'audio')
+    {
+        user.audioTrack.play()
     }
 }
-function handleInvalidUser(user) {
-    // Log a message indicating the invalid user
-    console.log(`Invalid user ${user.uid}. Removing.`);
 
-    // Remove the user's tracks and DOM elements
-    removeUser(user);
 
-    // Show an error message to the user
-    showErrorToUser();
 
-    // Alternatively, you might want to disconnect the client or take other actions
-    // Disconnecting the client (this is just an example, adjust as needed)
-    disconnectClient();
-}
 
-function removeUser(user) {
-    // Remove user's tracks from the client
-    client.unsubscribe(user);
-
-    // Remove corresponding DOM elements
-    const userContainer = document.getElementById(`user-container-${user.uid}`);
-    if (userContainer) {
-        userContainer.remove();
-    }
-
-    // You can add more logic based on your requirements
-}
-
-function showErrorToUser() {
-    // Show an error message to the user (you can customize this based on your UI)
-    alert("Invalid user. Only one-on-one calls are allowed.");
-}
-
-function disconnectClient() {
-    // Disconnect the client (adjust this based on your Agora RTC client handling)
-    client.leave();
-
-    // You might want to perform additional cleanup or actions here
-}
 
 let handleUserLeft = async (user) => {
-    delete remotetrocks[user.uid]
-    document.getElementById(`user-container-${user.uid}`).remove()
+   delete remotetrocks[user.uid];
+    document.getElementById(`user-container-${user.uid}`).remove();
+    
+    // Switch to a new random user when the current user leaves
+    switchToRandomUser();
+
 }
  
 let leaveAndRemoveLocalStream  = async () => {
@@ -127,7 +92,7 @@ let leaveAndRemoveLocalStream  = async () => {
     }
 
     await client.leave()
-    document.getElementById('join-btn').style.display = 'none'
+    document.getElementById('join-btn').style.display = 'block'
     document.getElementById('stream-controls').style.display = 'none'
     document.getElementById('video-streams').innerHTML = ''
 }
@@ -158,11 +123,33 @@ let toggleCamera = async (e) => {
     }
 }
 
+function getRandomUserId() {
+    const userIds = Object.keys(remotetrocks);
+    return userIds[Math.floor(Math.random() * userIds.length)];
+}
+
+async function switchToRandomUser() {
+    const randomUserId = getRandomUserId();
+    switchToUser(randomUserId);
+}
+
+async function switchToUser(userId) {
+    // Implement logic to switch to the specified user
+    const user = remotetrocks[userId];
+    // You may want to stop and remove the current localTracks video before switching
+    localTracks[1].stop();
+    localTracks[1].close();
+
+    // Play the video of the selected user
+    user.videoTrack.play(`user-${user.uid}`);
+}
+
+
 
 document.getElementById('join-btn').addEventListener('click', joinStream);
 document.getElementById('leave-btn').addEventListener('click', leaveAndRemoveLocalStream);
 document.getElementById('mic-btn').addEventListener('click', toggleMic);
+document.getElementById('next-btn').addEventListener('click', switchToRandomUser);
 document.getElementById('camera-btn').addEventListener('click', toggleCamera);
-
 
 
