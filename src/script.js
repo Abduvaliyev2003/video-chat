@@ -1,5 +1,5 @@
 const APP = "9f8a63f363ef4312aac6042fbe7c1b4f";
-const TOKEN = "007eJxTYFj0rE2+g+XvZJHFMr0RN/j+Hn/8qMDx9xr1xfXFyy6+yt+qwGCZZpFoZpxmbGacmmZibGiUmJhsZmBilJaUap5smGSSJvfjZGpDICND4aJKVkYGCATx2RmSMxLz8lJzGBgAiO8jxA=="  
+const TOKEN = "007eJxTYHgSIlRwSiHyPPfSymKrhzFTX3P5yUur3dnCsyw3vWLC0lwFBss0i0Qz4zRjM+PUNBNjQ6PExGQzAxOjtKRU82TDJJO0vLVnUhsCGRm+XjnIyMgAgSA+O0NyRmJeXmoOAwMAciEhBA=="  
 const CHANNEL = "channel"
   const client = AgoraRTC.createClient({mode:"rtc", codec:"vp8"});
 
@@ -145,7 +145,7 @@ async function switchToUser(userId) {
 }
 
 
-
+console.log(localTracks);
 document.getElementById('join-btn').addEventListener('click', joinStream);
 document.getElementById('leave-btn').addEventListener('click', leaveAndRemoveLocalStream);
 document.getElementById('mic-btn').addEventListener('click', toggleMic);
